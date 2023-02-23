@@ -58,7 +58,7 @@ h6 {
   pointer-events: auto;
   background-color: black;
   border-radius: 40px;
-  padding: 50px 30px 70px 30px;
+  padding: 50px 40px 70px 40px;
   border: 3px solid white;
   min-height: 650px;
   width: 90%;
@@ -99,8 +99,9 @@ h6 {
 
 .canvas-container {
   position: relative;
-  border: 2px solid blue;
-  aspect-ratio: 1/1;
+  height: 275px;
+  overflow: hidden;
+  border-radius: 10px;
 }
 
 .countdown {
@@ -168,8 +169,33 @@ h6 {
 }
 
 .background-slider,
-.effects-slider {
+.effects-slider,
+.frame-slider {
   height: 65px;
+}
+
+.frame-slider .swiper-slide,
+.background-slider .swiper-slide,
+.effects-slider .swiper-slide {
+  width: 85px !important;
+  height: 65px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  object-fit: contain;
+  width: 10px !important;
+  color: white;
+  height: 10px;
+  top: 80%;
 }
 
 .upload-btn {
@@ -194,4 +220,28 @@ h6 {
   background-color: black;
   color: white;
   border: 2px solid white;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+
+.social-share-container {
+  text-align: center;
+}
+
+.social-share-container hr {
+  margin: 2rem 0;
+}
+
+.social-share-container > div {
+  display: flex;
+  justify-content: space-around;
+}
+
+.social-share-container a {
+  color: rgb(13, 110, 253);
+  text-decoration: underline;
 }

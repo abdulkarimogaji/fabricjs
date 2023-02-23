@@ -1,10 +1,11 @@
 const liveEventBackground = document.getElementById("live-event-background");
-const socialShareContainer = document.querySelector(".social-share-container");
-const textShareContainer = document.querySelector(".text-share-form");
-const emailShareContainer = document.querySelector(".email-share-form");
-const eventDescription = document.querySelector(".event-description");
+const socialShareContainer = document.getElementById("social-share-container");
+const textShareContainer = document.getElementById("text-share-form");
+const emailShareContainer = document.getElementById("email-share-form");
+const eventDescription = document.getElementById("event-description");
 const galleryLink = document.getElementById("viewImageGallery");
-const sms = document.querySelector(".smsOption");
+const sms = document.getElementById("smsOption");
+const overlayContainer = document.getElementById("overlay-container");
 
 // global values
 let SMS_ENABLED = false;
@@ -103,7 +104,19 @@ async function fetchOverlays() {
       {}
     );
     const data = await response.json();
+    if (!Array.isArray(data)) throw new Error("an error occurred");
+    data.forEach((ov) => {
+      const tmp = document.createElement("img");
+      tmp.classList.add("swiper-slide");
+      tmp.setAttribute("src", ov.image);
+      // TODO: Add event listener here for applying overlay
+      overlayContainer.appendChild(tmp);
+    });
   } catch (err) {
     console.log("ERROR FETCHING OVERLAYS");
   }
 }
+
+window.addEventListener("load", async () => {
+  fetchEvent();
+});
