@@ -4,8 +4,10 @@ const LOADER = document.getElementById("loader");
 const COUNTDOWN = document.getElementById("countdown");
 const COUNTDOWN_TEXT = document.getElementById("countdown-text");
 const CANVAS_LABEL = document.getElementById("canvas-label");
-const CANVAS_CONTAINER = document.getElementById("canvas-container");
+const CANVAS_CONTAINER = document.getElementById("canvas-section");
+const CANVAS = new fabric.Canvas("canvas");
 const VIDEO = document.getElementById("video");
+const OVERLAY = document.getElementById("overlay");
 const captureBtn = document.getElementById("capture-btn");
 
 const VENDOR_URL = window.URL || window.webkitURL;
@@ -58,6 +60,12 @@ function mobileAndTabletCheck() {
 function startLoader() {
   LOADER.classList.remove("hidden");
 }
+
+function clearOverlay() {
+  OVERLAY.src = "";
+  OVERLAY.classList.remove("show");
+}
+
 function stopLoader() {
   LOADER.classList.add("hidden");
 }
@@ -68,6 +76,7 @@ function playShutterSound() {
 
 function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
+  canvas;
 }
 
 function startCountdown(sec) {
@@ -107,7 +116,8 @@ async function changeScreen(screenType, direction) {
   startLoader();
   IN_SCREEN_CHANGE = true;
   console.log("SCREEN_CHANGE: ", screenType);
-  // changes to canvas here
+  // changes to canvas here  mix-blend-mode: multiply;
+
   await sleep(1000);
 
   // hide other screens
@@ -122,23 +132,26 @@ async function changeScreen(screenType, direction) {
   switch (screenType) {
     case SCREENS.SELECT_MODE:
       CANVAS_LABEL.innerText = "Choose your favorite photo experience";
+      clearOverlay();
       await startWebcam();
       break;
     case SCREENS.SELECT_BACKGROUND:
       CANVAS_LABEL.innerText = "Select a Background";
-      await fetchOverlays();
+      await fetchBackgrounds();
       break;
     case SCREENS.CONFIRM_CAPTURE:
       CANVAS_LABEL.innerText = "Do you like it?";
       break;
     case SCREENS.CAPTURE_SCREEN:
       CANVAS_LABEL.innerText = "Pick a Frame...Or Not!";
+      await fetchOverlays();
       break;
     case SCREENS.SELECT_EFFECTS:
       CANVAS_LABEL.innerText = "Try a Fun Filter, or Keep Original";
       break;
     case SCREENS.SELECT_PROPS:
       CANVAS_LABEL.innerText = "Photo Props. Why Not?";
+      await fetchProps();
       break;
     case SCREENS.SELECT_EMAIL_OR_PHONE:
       CANVAS_CONTAINER.classList.add("hidden");
@@ -182,7 +195,10 @@ async function takePicture() {
 async function photoCapture() {
   await startCountdown(3);
   playShutterSound();
-  await takePicture();
+  const url = await takePicture();
+  fabric.Image.fromURL(url, function (img) {
+    CANVAS.add(img);
+  });
   changeScreen(SCREENS.CONFIRM_CAPTURE);
 }
 

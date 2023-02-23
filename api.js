@@ -3,14 +3,19 @@ const socialShareContainer = document.getElementById("social-share-container");
 const textShareContainer = document.getElementById("text-share-form");
 const emailShareContainer = document.getElementById("email-share-form");
 const eventDescription = document.getElementById("event-description");
-const galleryLink = document.getElementById("viewImageGallery");
+const galleryLink = document.getElementById("view-image-gallery");
 const sms = document.getElementById("smsOption");
 const overlayContainer = document.getElementById("overlay-container");
+const backgroundsContainer = document.getElementById("backgrounds-container");
+const propsContainer = document.getElementById("props-container");
 
 // global values
 let SMS_ENABLED = false;
 let TEXT_EDIT_FEATURE = false;
 let EVENT_ID = "";
+let PROPS_FETCHED = false;
+let BACKGROUNDS_FETCHED = false;
+let OVERLAYS_FETCHED = false;
 
 async function fetchEvent() {
   let uniqueId = "cjvlewis";
@@ -35,10 +40,10 @@ async function fetchEvent() {
       sms.style.visibility = "hidden";
       sms.style.order = "2";
     }
-    liveEventBackground.style.backgroundImage = data.live_event.background;
+    liveEventBackground.style.backgroundImage = `url(${data.live_event.background})`;
     galleryLink.href = `https://portal.brandpix.com/virtual_photo_booth/${data.live_event.slug}/gallery`;
   } catch (err) {
-    console.log("API ERROR FETCHING EVENTS", err.message);
+    console.log("API ERROR FETCHING EVENTS", err);
   }
 }
 
@@ -98,23 +103,120 @@ function isHexColorLight(color) {
 }
 
 async function fetchOverlays() {
+  if (OVERLAYS_FETCHED) return;
+
   try {
     const response = await fetch(
       `https://portal.brandpix.com/v1/api/live/get_overlays?live_event_id=${EVENT_ID}`,
       {}
     );
     const data = await response.json();
-    if (!Array.isArray(data)) throw new Error("an error occurred");
-    data.forEach((ov) => {
+    if (!Array.isArray(data.overlays)) throw new Error("an error occurred");
+
+    OVERLAYS_FETCHED = true;
+
+    data.overlays.forEach((ov) => {
       const tmp = document.createElement("img");
       tmp.classList.add("swiper-slide");
       tmp.setAttribute("src", ov.image);
-      // TODO: Add event listener here for applying overlay
+
+      tmp.addEventListener("click", () => onClickOverlay(tmp));
+
       overlayContainer.appendChild(tmp);
+
+      // activate swiper
+      new Swiper(".overlay-slider-swiper", {
+        slidesPerView: 3,
+        spaceBetween: 10,
+        loop: false,
+        loopFillGroupWithBlank: true,
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+      });
     });
   } catch (err) {
-    console.log("ERROR FETCHING OVERLAYS");
+    console.log("ERROR FETCHING OVERLAYS", err);
   }
+}
+
+async function fetchBackgrounds() {
+  if (BACKGROUNDS_FETCHED) return;
+
+  try {
+    const response = await fetch(
+      `https://portal.brandpix.com/v1/api/live/get_backgrounds?live_event_id=${EVENT_ID}`
+    );
+    const data = await response.json();
+    if (!Array.isArray(data.backgrounds)) throw new Error("an error occurred");
+
+    BACKGROUNDS_FETCHED = true;
+
+    data.backgrounds.forEach((bg) => {
+      const tmp = document.createElement("img");
+      tmp.classList.add("swiper-slide");
+      tmp.setAttribute("src", bg.image);
+      // TODO: Add event listener here for applying background
+
+      backgroundsContainer.appendChild(tmp);
+
+      // activate swiper
+      new Swiper(".background-slider-swiper", {
+        slidesPerView: 3,
+        spaceBetween: 10,
+        loop: false,
+        loopFillGroupWithBlank: true,
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+      });
+    });
+  } catch (err) {
+    console.log("ERROR FETCHING BACKGROUNDS", err);
+  }
+}
+async function fetchProps() {
+  if (PROPS_FETCHED) return;
+  try {
+    const response = await fetch(
+      `https://portal.brandpix.com/v1/api/live/get_props?live_event_id=${EVENT_ID}`
+    );
+    const data = await response.json();
+    console.log(data);
+    if (!Array.isArray(data.props)) throw new Error("an error occurred");
+
+    PROPS_FETCHED = true;
+
+    data.props.forEach((prop) => {
+      const tmp = document.createElement("img");
+      tmp.classList.add("swiper-slide");
+      tmp.setAttribute("src", prop.image);
+      // TODO: Add event listener here for applying prop
+
+      propsContainer.appendChild(tmp);
+
+      // activate swiper
+      new Swiper(".prop-slider-swiper", {
+        slidesPerView: 3,
+        spaceBetween: 10,
+        loop: false,
+        loopFillGroupWithBlank: true,
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+      });
+    });
+  } catch (err) {
+    console.log("ERROR FETCHING PROPS", err);
+  }
+}
+
+async function onClickOverlay(ov) {
+  OVERLAY.src = ov.src;
+  OVERLAY.classList.add("show");
 }
 
 window.addEventListener("load", async () => {

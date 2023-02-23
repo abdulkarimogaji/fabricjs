@@ -27,7 +27,7 @@
       </div>
       <div class="app hidden" id="app">
         <main>
-          <div class="canvas-container" id="canvas-container">
+          <div class="canvas-section" id="canvas-section">
             <video
               style="object-fit: cover"
               id="video"
@@ -36,6 +36,14 @@
               autoplay
               playsinline
             ></video>
+            <img
+              id="overlay"
+              src=""
+              alt=""
+              class="overlay"
+              onerror="this.style.display = 'none'; "
+            />
+            <canvas id="canvas" class="canvas"></canvas>
             <div class="countdown hidden" id="countdown">
               <h2 id="countdown-text"></h3>
             </div>
@@ -147,7 +155,15 @@
               </div>
             </div>
             <div class="content__choose-background hidden" data-screen-type="CAPTURE_SCREEN">
-              <div class="frame-slider"></div>
+              <div class="overlay-slider">
+                <div class="swiper overlay-slider-swiper">
+                  <div class="swiper-wrapper" id="overlay-container">
+                  </div>
+                  <!-- If we need navigation buttons -->
+                  <div class="swiper-button-prev"></div>
+                  <div class="swiper-button-next"></div>
+                </div>
+              </div>
               <label for="upload" class="upload-btn">
                 <input type="file" name="upload" id="upload" class="hidden">
                 Upload Image
@@ -240,7 +256,11 @@
             <div class="content__choose-background hidden" data-screen-type="SELECT_BACKGROUND">
               <div class="background-slider">
                 <div class="swiper background-slider-swiper">
-                  <div class="swiper-wrapper" id="overlay-container"></div>
+                  <div class="swiper-wrapper" id="backgrounds-container">
+                  </div>
+                  <!-- If we need navigation buttons -->
+                  <div class="swiper-button-prev"></div>
+                  <div class="swiper-button-next"></div>
                 </div>
               </div>
               <button class="nav-button" data-forward-to="SELECT_EFFECTS">Next</button>
@@ -299,7 +319,15 @@
               <button class="nav-button" data-back-to="SELECT_BACKGROUND">Back</button>
             </div>
             <div class="content__choose-background hidden" data-screen-type="SELECT_PROPS">
-              <div class="effects-slider"></div>
+              <div class="props-slider">
+                <div class="swiper prop-slider-swiper">
+                  <div class="swiper-wrapper" id="props-container">
+                  </div>
+                  <!-- If we need navigation buttons -->
+                  <div class="swiper-button-prev"></div>
+                  <div class="swiper-button-next"></div>
+                </div>
+              </div>
               <button class="nav-button" data-forward-to="SELECT_EMAIL_OR_PHONE">Next</button>
               <button class="nav-button" data-back-to="SELECT_EFFECTS">Back</button>
             </div>
@@ -338,7 +366,7 @@
                   </div>
                 </div>
 
-                <a href="">View full gallery</a>
+                <a href="" id="view-image-gallery">View full gallery</a>
               </div>
             </div>
           </div>
@@ -418,6 +446,10 @@
         },
       });
   </script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"
+    crossorigin="anonymous"
+  ></script>
   <script src="./api.js"></script>
   <script src="./app.js"></script>
 </html>
