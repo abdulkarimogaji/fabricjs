@@ -11,11 +11,15 @@
       href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swiper/swiper-bundle.min.css"
+    />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <header></header>
-    <main class="main">
+    <main class="main" id="live-event-background">
       <div class="welcome" id="welcome">
         <button class="getting-started" id="getting-started">
           Get started
@@ -24,6 +28,14 @@
       <div class="app hidden" id="app">
         <main>
           <div class="canvas-container" id="canvas-container">
+            <video
+              style="object-fit: cover"
+              id="video"
+              class="video"
+              muted
+              autoplay
+              playsinline
+            ></video>
             <div class="countdown hidden" id="countdown">
               <h2 id="countdown-text"></h3>
             </div>
@@ -226,12 +238,63 @@
               </div>
             </div>
             <div class="content__choose-background hidden" data-screen-type="SELECT_BACKGROUND">
-              <div class="background-slider"></div>
+              <div class="background-slider">
+                <div class="swiper background-slider-swiper">
+                  <div class="swiper-wrapper" id="overlay-container"></div>
+                </div>
+              </div>
               <button class="nav-button" data-forward-to="SELECT_EFFECTS">Next</button>
               <button class="nav-button" data-back-to="CONFIRM_CAPTURE">Back</button>
             </div>
             <div class="content__choose-background hidden" data-screen-type="SELECT_EFFECTS">
-              <div class="effects-slider"></div>
+              <div class="effects-slider">
+                  <div
+                    class="swiper effects-slider-swiper"
+                  >
+                    <!-- Additional required wrapper -->
+                    <div class="swiper-wrapper">
+                      <!-- Slides -->
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/serenity.jpg"
+                      />
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/effect1.jpg"
+                        style="filter: grayscale(100%)"
+                      />
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/brownie.jpg"
+                      />
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/vintage.jpg"
+                      />
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/technicolor.jpg"
+                        id="changeFilterToTechnicolor"
+                      />
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/polarioid.jpg"
+                      />
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/kodachrome.jpg"
+                      />
+                      <img
+                        class="swiper-slide"
+                        src="./assets/effects/bw.jpg"
+                      />
+                    </div>
+
+                    <!-- If we need navigation buttons -->
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
+                  </div>
+              </div>
               <button class="nav-button" data-forward-to="SELECT_PROPS">Next</button>
               <button class="nav-button" data-back-to="SELECT_BACKGROUND">Back</button>
             </div>
@@ -239,6 +302,44 @@
               <div class="effects-slider"></div>
               <button class="nav-button" data-forward-to="SELECT_EMAIL_OR_PHONE">Next</button>
               <button class="nav-button" data-back-to="SELECT_EFFECTS">Back</button>
+            </div>
+            <div class="content__choose-background hidden" data-screen-type="SOCIAL_SHARE">
+              <div class="social-share-container" id="social-share-container">
+                <p>
+                  Share on any of the following
+                </p>
+                <div>
+                  <div class="content__choose-mode__option">
+                    <button data-mode-select="PHOTO">
+                     <img src="./assets/icons/facebook.png" alt="">
+                    </button>
+                    <span> Facebook </span>
+                  </div>
+                  <div class="content__choose-mode__option">
+                    <button data-mode-select="PHOTO">
+                     <img src="" alt="">
+                    </button>
+                    <span> Pinterest </span>
+                  </div>
+                </div>
+                <hr />
+                <div>
+                  <div class="content__choose-mode__option">
+                    <button data-mode-select="PHOTO">
+                     <img src="" alt="">
+                    </button>
+                    <span> Take another </span>
+                  </div>
+                  <div class="content__choose-mode__option">
+                    <button data-mode-select="PHOTO">
+                     <img src="" alt="">
+                    </button>
+                    <span> Copy link </span>
+                  </div>
+                </div>
+
+                <a href="">View full gallery</a>
+              </div>
             </div>
           </div>
         </main>
@@ -304,6 +405,19 @@
       </div>
     </main>
   </body>
+  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+  <script> 
+      var swiper = new Swiper('.effects-slider-swiper', {
+        slidesPerView: 3,
+        spaceBetween: 10,
+        loop: false,
+        loopFillGroupWithBlank: true,
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+      });
+  </script>
   <script src="./api.js"></script>
   <script src="./app.js"></script>
 </html>
