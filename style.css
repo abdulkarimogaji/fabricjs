@@ -47,4 +47,74 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid black;
+  padding: 1rem;
+  font-family: "Hind Siliguri", sans-serif;
+  min-height: 100vh;
+}
+
+.app {
+  position: relative;
+  pointer-events: auto;
+  background-color: black;
+  border-radius: 40px;
+  padding: 50px 20px;
+  border: 3px solid white;
+  height: 95vh;
+  height: 650px;
+  width: 90%;
+  max-width: 350px;
+  mix-blend-mode: multiply;
+}
+
+.hidden {
+  display: none !important;
+}
+.block {
+  display: block;
+}
+.getting-started {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 0.6rem 1.5rem;
+  font-size: 1.2rem;
+  background-color: white;
+  font-weight: 600;
+  transition: 400ms;
+  cursor: pointer;
+}
+
+.getting-started:hover {
+  background-color: black;
+  color: white;
+}
+
+.loader {
+  position: absolute;
+  inset: 0;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-container {
+  position: relative;
+  border: 2px solid blue;
+  aspect-ratio: 1/1;
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  background-color: red;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.countdown h2 {
+  color: white;
+  font-weight: bold;
+  font-size: 3rem;
 }
