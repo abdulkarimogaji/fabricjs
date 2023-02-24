@@ -267,7 +267,7 @@
               <button class="nav-button" data-back-to="CONFIRM_CAPTURE">Back</button>
             </div>
             <div class="content__choose-background hidden" data-screen-type="SELECT_EFFECTS">
-              <div class="effects-slider">
+              <div class="effects-slider" id="effects-slider">
                   <div
                     class="swiper effects-slider-swiper"
                   >
@@ -277,36 +277,44 @@
                       <img
                         class="swiper-slide"
                         src="./assets/effects/serenity.jpg"
+                        data-filter-index="0"
                       />
                       <img
                         class="swiper-slide"
                         src="./assets/effects/effect1.jpg"
                         style="filter: grayscale(100%)"
+                        data-filter-index="1"
                       />
                       <img
                         class="swiper-slide"
                         src="./assets/effects/brownie.jpg"
+                        data-filter-index="2"
                       />
                       <img
                         class="swiper-slide"
                         src="./assets/effects/vintage.jpg"
+                        data-filter-index="3"
                       />
                       <img
                         class="swiper-slide"
                         src="./assets/effects/technicolor.jpg"
                         id="changeFilterToTechnicolor"
+                        data-filter-index="4"
                       />
                       <img
                         class="swiper-slide"
                         src="./assets/effects/polarioid.jpg"
+                        data-filter-index="5"
                       />
                       <img
                         class="swiper-slide"
                         src="./assets/effects/kodachrome.jpg"
+                        data-filter-index="6"
                       />
                       <img
                         class="swiper-slide"
                         src="./assets/effects/bw.jpg"
+                        data-filter-index="7"
                       />
                     </div>
 
@@ -450,6 +458,7 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"
     crossorigin="anonymous"
   ></script>
+  <script src="./init.js"></script>
   <script src="./api.js"></script>
   <script src="./app.js"></script>
 </html>

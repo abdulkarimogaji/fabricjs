@@ -106,7 +106,7 @@ h6 {
 .countdown {
   position: absolute;
   inset: 0;
-  background-color: red;
+  background-color: rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -239,9 +239,15 @@ h6 {
 }
 
 .canvas-container {
-  position: absolute;
+  position: absolute !important;
   inset: 0;
-  height: 275px;
+  height: 275px !important;
+  width: unset !important;
+}
+
+.canvas {
+  width: 275px !important;
+  height: 275px !important;
 }
 
 .social-share-container {
