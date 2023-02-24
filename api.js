@@ -16,6 +16,7 @@ let EVENT_ID = "";
 let PROPS_FETCHED = false;
 let BACKGROUNDS_FETCHED = false;
 let OVERLAYS_FETCHED = false;
+let USING_TRANSPARENT_IMAGE = false;
 
 async function fetchEvent() {
   let uniqueId = "cjvlewis";
@@ -157,7 +158,8 @@ async function fetchBackgrounds() {
       const tmp = document.createElement("img");
       tmp.classList.add("swiper-slide");
       tmp.setAttribute("src", bg.image);
-      // TODO: Add event listener here for applying background
+
+      tmp.addEventListener("click", () => onClickBackground(tmp));
 
       backgroundsContainer.appendChild(tmp);
 
@@ -193,7 +195,8 @@ async function fetchProps() {
       const tmp = document.createElement("img");
       tmp.classList.add("swiper-slide");
       tmp.setAttribute("src", prop.image);
-      // TODO: Add event listener here for applying prop
+
+      tmp.addEventListener("click", () => onClickProp(tmp));
 
       propsContainer.appendChild(tmp);
 
@@ -219,6 +222,80 @@ async function onClickOverlay(ov) {
   OVERLAY.classList.add("show");
 }
 
+function onClickBackground(bg) {
+  // add background to canvas
+  fabric.Image.fromURL(bg.src, function (img, err) {
+    img.set({
+      originX: "left",
+      originY: "top",
+    });
+    img.scaleToHeight(GLOBAL_WIDTH);
+    img.scaleToWidth(GLOBAL_WIDTH);
+    CANVAS.setBackgroundImage(img, CANVAS.renderAll.bind(CANVAS));
+  });
+
+  // replace the photo_image object with image transparent background
+  if (USING_TRANSPARENT_IMAGE) return;
+  return;
+  CANVAS.forEachObject((obj, idx) => {
+    if (obj.objectKey == "PHOTO_IMAGE") {
+      fabric.Image.fromURL(TRANSPARENT_BG_IMAGE, (img) => {
+        img.setOptions({
+          left: 0,
+          top: 0,
+          hasControls: false,
+          hasRotatingPoint: false,
+          hasBorders: false,
+          lockMovementX: true,
+          lockMovementY: true,
+          lockScalingX: true,
+          lockScalingY: true,
+          lockRotation: true,
+          objectKey: "PHOTO_IMAGE_TRANSPARENT",
+        });
+        img.scaleToHeight(GLOBAL_WIDTH);
+        img.scaleToWidth(GLOBAL_WIDTH);
+
+        CANVAS.insertAt(img, idx);
+        CANVAS.remove(obj);
+        USING_TRANSPARENT_IMAGE = true;
+      });
+    }
+  });
+}
+
+function onClickProp(pr) {
+  console.log("clicked");
+  fabric.Image.fromURL(pr.src, (img) => {
+    img.set({
+      left: 20,
+      top: 20,
+      padding: 10,
+      rotatingPointOffset: 0,
+    });
+    img.scaleToHeight(150);
+    img.scaleToWidth(150);
+    CANVAS.add(img);
+  });
+}
+
 window.addEventListener("load", async () => {
-  fetchEvent();
+  await fetchEvent();
+  fetchOverlays();
+  fetchBackgrounds();
+  fetchProps();
 });
+
+async function fetchTransparentBgImage(imageData) {
+  try {
+    const response = await fetch(
+      `https://portal.brandpix.com/remove_background.php?base64=${imageData}`
+    );
+    const data = await response.json();
+    console.log("response converting", data);
+    return data.url;
+  } catch (err) {
+    console.log("ERROR FETCHING TRANSPARENT BG", err);
+  }
+  return null;
+}

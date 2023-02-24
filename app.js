@@ -6,6 +6,26 @@ const COUNTDOWN_TEXT = document.getElementById("countdown-text");
 const CANVAS_LABEL = document.getElementById("canvas-label");
 const CANVAS_CONTAINER = document.getElementById("canvas-section");
 const CANVAS = new fabric.Canvas("canvas");
+
+const ALL_FILTERS = [
+  [],
+  [new fabric.Image.filters.Grayscale()],
+  [new fabric.Image.filters.Brownie()],
+  [new fabric.Image.filters.Vintage()],
+  [new fabric.Image.filters.Technicolor()],
+  [new fabric.Image.filters.Polaroid()],
+  [new fabric.Image.filters.Kodachrome()],
+  [new fabric.Image.filters.BlackWhite()],
+];
+
+let GLOBAL_WIDTH = 275;
+let TRANSPARENT_BG_IMAGE = null;
+
+//
+CANVAS.setHeight(GLOBAL_WIDTH);
+CANVAS.setWidth(GLOBAL_WIDTH);
+//
+
 const VIDEO = document.getElementById("video");
 const OVERLAY = document.getElementById("overlay");
 const captureBtn = document.getElementById("capture-btn");
@@ -76,7 +96,6 @@ function playShutterSound() {
 
 function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
-  canvas;
 }
 
 function startCountdown(sec) {
@@ -102,6 +121,20 @@ function startCountdown(sec) {
       COUNTDOWN_TEXT.innerText = String(count);
     }, 1000);
   });
+}
+
+function clearFabricObjects() {
+  CANVAS.forEachObject((obj) => {
+    // if (obj.objectKey == "PHOTO_IMAGE") {
+    console.log("removing");
+    CANVAS.remove(obj);
+    // }
+  });
+
+  // remove overlay image
+  CANVAS.overlayImage = null;
+  CANVAS.backgroundImage = null;
+  CANVAS.renderAll.bind(CANVAS);
 }
 
 async function changeScreen(screenType, direction) {
@@ -133,25 +166,24 @@ async function changeScreen(screenType, direction) {
     case SCREENS.SELECT_MODE:
       CANVAS_LABEL.innerText = "Choose your favorite photo experience";
       clearOverlay();
+      clearFabricObjects();
+      USING_TRANSPARENT_IMAGE = false;
       await startWebcam();
       break;
     case SCREENS.SELECT_BACKGROUND:
       CANVAS_LABEL.innerText = "Select a Background";
-      await fetchBackgrounds();
       break;
     case SCREENS.CONFIRM_CAPTURE:
       CANVAS_LABEL.innerText = "Do you like it?";
       break;
     case SCREENS.CAPTURE_SCREEN:
       CANVAS_LABEL.innerText = "Pick a Frame...Or Not!";
-      await fetchOverlays();
       break;
     case SCREENS.SELECT_EFFECTS:
       CANVAS_LABEL.innerText = "Try a Fun Filter, or Keep Original";
       break;
-    case SCREENS.SELECT_PROPS:
+    case SCREENS.SELECT_PRconstOPS:
       CANVAS_LABEL.innerText = "Photo Props. Why Not?";
-      await fetchProps();
       break;
     case SCREENS.SELECT_EMAIL_OR_PHONE:
       CANVAS_CONTAINER.classList.add("hidden");
@@ -185,9 +217,8 @@ async function takePicture() {
       context.scale(-1, 1);
     }
     context.drawImage(VIDEO, 0, 0, 1080, 1080);
-    const data = camCanvas.toDataURL("image/png", 0.4);
-    context.fillStyle = "#AAA";
-    context.fillRect(0, 0, 1080, 1080);
+    const data = camCanvas.toDataURL("image/png", 0.2);
+    camCanvas.remove();
     resolve(data);
   });
 }
@@ -195,10 +226,46 @@ async function takePicture() {
 async function photoCapture() {
   await startCountdown(3);
   playShutterSound();
+
   const url = await takePicture();
-  fabric.Image.fromURL(url, function (img) {
+
+  // add image to canvas
+  fabric.Image.fromURL(url, (img) => {
+    img.setOptions({
+      left: 0,
+      top: 0,
+      hasControls: false,
+      hasRotatingPoint: false,
+      hasBorders: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockScalingX: true,
+      lockScalingY: true,
+      lockRotation: true,
+      objectKey: "PHOTO_IMAGE",
+    });
+    img.scaleToHeight(GLOBAL_WIDTH);
+    img.scaleToWidth(GLOBAL_WIDTH);
+
+    // get transparent image
+    fetchTransparentBgImage(
+      url.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, "")
+    ).then((result) => (TRANSPARENT_BG_IMAGE = result));
+
     CANVAS.add(img);
   });
+
+  // add overlay to canvas
+  fabric.Image.fromURL(OVERLAY.src, function (img, isError) {
+    img.set({
+      originX: "left",
+      originY: "top",
+    });
+    img.scaleToHeight(GLOBAL_WIDTH);
+    img.scaleToWidth(GLOBAL_WIDTH);
+    CANVAS.setOverlayImage(img, CANVAS.renderAll.bind(CANVAS));
+  });
+  clearOverlay();
   changeScreen(SCREENS.CONFIRM_CAPTURE);
 }
 
@@ -285,4 +352,19 @@ captureBtn.addEventListener("click", () => {
     default:
       break;
   }
+});
+
+// event listeners for effects
+document.querySelectorAll("#effects-slider img").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const idx = +btn.getAttribute("data-filter-index") || 0;
+
+    CANVAS.forEachObject((obj) => {
+      if (obj.objectKey == "PHOTO_IMAGE") {
+        obj.filters = ALL_FILTERS[idx];
+        obj.applyFilters();
+      }
+    });
+    CANVAS.renderAll();
+  });
 });
