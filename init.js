@@ -1,18 +1,16 @@
-function renderIcon(icon, bg) {
+function renderIcon(icon) {
   return function renderIcon(ctx, left, top, styleOverride, fabricObject) {
     var size = 20;
 
-    if (bg == "bgtrue") {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(left, top, size / 2 + 2, 0, 2 * Math.PI, false);
-      ctx.shadowColor = "#00000055";
-      ctx.shadowBlur = 4;
-      ctx.fillStyle = "#ffffff";
-      ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.restore();
-    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(left, top, size / 2 + 2, 0, 2 * Math.PI, false);
+    ctx.shadowColor = "#00000055";
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.restore();
 
     ctx.save();
     ctx.translate(left, top);
@@ -40,7 +38,9 @@ var scaleIcon =
 var scaleImg = document.createElement("img");
 scaleImg.src = scaleIcon;
 
-fabric.Object.prototype.cornerSize = 40;
+const propSettingSize = 20;
+
+fabric.Object.prototype.cornerSize = propSettingSize;
 fabric.Object.prototype.padding = 7;
 fabric.Object.prototype.transparentCorners = false;
 
@@ -65,13 +65,14 @@ fabric.Object.prototype.controls.tr = new fabric.Control({
   actionHandler: controlsUtils.rotationWithSnapping,
   cursorStyleHandler: controlsUtils.rotationStyleHandler,
   withConnection: true,
-  render: renderIcon(rotateImg, "bgtrue"),
-  cornerSize: 40,
+  render: renderIcon(rotateImg),
+  cursorStyle: "crosshair",
+  cornerSize: propSettingSize,
   actionName: "rotate",
-  sizeX: 40,
-  sizeY: 40,
-  touchSizeX: 40,
-  touchSizeY: 40,
+  sizeX: propSettingSize,
+  sizeY: propSettingSize,
+  touchSizeX: propSettingSize,
+  touchSizeY: propSettingSize,
 });
 
 fabric.Object.prototype.controls.br = new fabric.Control({
@@ -80,13 +81,14 @@ fabric.Object.prototype.controls.br = new fabric.Control({
   cornerPadding: 0,
   actionHandler: controlsUtils.scalingEqually,
   withConnection: true,
-  render: renderIcon(scaleImg, "bgtrue"),
-  cornerSize: 40,
+  cursorStyle: "nesw-resize",
+  render: renderIcon(scaleImg),
+  cornerSize: propSettingSize,
   actionName: "scale",
-  sizeX: 40,
-  sizeY: 40,
-  touchSizeX: 40,
-  touchSizeY: 40,
+  sizeX: propSettingSize,
+  sizeY: propSettingSize,
+  touchSizeX: propSettingSize,
+  touchSizeY: propSettingSize,
 });
 
 fabric.Object.prototype.controls.deleteControl = new fabric.Control({
@@ -96,12 +98,12 @@ fabric.Object.prototype.controls.deleteControl = new fabric.Control({
   cornerPadding: 0,
   cursorStyle: "pointer",
   mouseUpHandler: deleteObject,
-  render: renderIcon(img, "bgtrue"),
-  sizeX: 40,
-  sizeY: 40,
-  touchSizeX: 40,
-  touchSizeY: 40,
-  cornerSize: 40,
+  render: renderIcon(img),
+  sizeX: propSettingSize,
+  sizeY: propSettingSize,
+  touchSizeX: propSettingSize,
+  touchSizeY: propSettingSize,
+  cornerSize: propSettingSize,
 });
 
 function deleteObject(eventData, transform) {
@@ -110,3 +112,98 @@ function deleteObject(eventData, transform) {
   canvas.remove(target);
   canvas.requestRenderAll();
 }
+
+// FABRIC SPRITE CLASS
+
+fabric.Sprite = fabric.util.createClass(fabric.Image, {
+  type: "sprite",
+
+  spriteWidth: 275,
+  spriteHeight: 275,
+  spriteIndex: 0,
+  frameTime: 500,
+
+  initialize: function (element, options) {
+    options || (options = {});
+
+    options.width = this.spriteWidth;
+    options.height = this.spriteHeight;
+
+    this.callSuper("initialize", element, options);
+
+    this.createTmpCanvas();
+    this.createSpriteImages();
+  },
+
+  createTmpCanvas: function () {
+    this.tmpCanvasEl = fabric.util.createCanvasElement();
+    this.tmpCanvasEl.width = this.spriteWidth || this.width;
+    this.tmpCanvasEl.height = this.spriteHeight || this.height;
+  },
+
+  createSpriteImages: function () {
+    this.spriteImages = [];
+
+    var steps = this._element.width / this.spriteWidth;
+    for (var i = 0; i < steps; i++) {
+      this.createSpriteImage(i);
+      this.width / 2, -this.height / 2;
+    }
+  },
+
+  createSpriteImage: function (i) {
+    var tmpCtx = this.tmpCanvasEl.getContext("2d");
+    tmpCtx.clearRect(0, 0, this.tmpCanvasEl.width, this.tmpCanvasEl.height);
+    tmpCtx.drawImage(this._element, 0, 0, 275, 275);
+
+    var dataURL = this.tmpCanvasEl.toDataURL("image/png");
+    var tmpImg = fabric.util.createImage();
+
+    tmpImg.src = dataURL;
+
+    this.spriteImages.push(tmpImg);
+  },
+
+  _render: function (ctx) {
+    console.log("rendering", this.spriteImages.length);
+    ctx.drawImage(
+      this.spriteImages[this.spriteIndex],
+      275 * this.spriteIndex,
+      0,
+      275,
+      275,
+      -this.width / 2,
+      -this.height / 2,
+      275,
+      275
+    );
+  },
+
+  play: function () {
+    var _this = this;
+    this.animInterval = setInterval(function () {
+      _this.onPlay && _this.onPlay();
+      _this.dirty = true;
+
+      _this.spriteIndex++;
+
+      if (_this.spriteIndex === _this.spriteImages.length) {
+        _this.spriteIndex = 0;
+      }
+    }, this.frameTime);
+  },
+
+  stop: function () {
+    clearInterval(this.animInterval);
+  },
+});
+
+fabric.Sprite.fromURLs = function (urls, callback, imgOptions) {
+  urls.forEach((url) => {
+    fabric.util.loadImage(url, function (img) {
+      callback(new fabric.Sprite(img, imgOptions));
+    });
+  });
+};
+
+fabric.Sprite.async = true;
