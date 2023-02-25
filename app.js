@@ -209,17 +209,30 @@ async function takePicture() {
     const context = camCanvas.getContext("2d", { willReadFrequently: true });
     camCanvas.width = 1080;
     camCanvas.height = 1080;
-    if (mobileAndTabletCheck() && FLIP_MODE) {
-      context.translate(1080, 0);
-      context.scale(-1, 1);
-    } else if (FLIP_MODE) {
-      context.translate(1080, 0);
-      context.scale(-1, 1);
-    }
     context.drawImage(VIDEO, 0, 0, 1080, 1080);
-    const data = camCanvas.toDataURL("image/png", 0.2);
+    const data = camCanvas.toDataURL("image/png", 1);
     camCanvas.remove();
     resolve(data);
+  });
+}
+
+async function takePictureV2() {
+  return new Promise((resolve, reject) => {
+    gifshot.takeSnapShot(
+      {
+        gifWidth: 1080,
+        gifHeight: 1080,
+        interval: 0.1,
+        numFrames: 30,
+        frameDuration: 1,
+        sampleInterval: 10,
+        numWorkers: 2,
+      },
+      function (obj) {
+        if (obj.error) reject(obj.error);
+        resolve(obj.image);
+      }
+    );
   });
 }
 
@@ -227,7 +240,7 @@ async function photoCapture() {
   await startCountdown(3);
   playShutterSound();
 
-  const url = await takePicture();
+  const url = await takePictureV2();
 
   // add image to canvas
   fabric.Image.fromURL(url, (img) => {
@@ -243,9 +256,11 @@ async function photoCapture() {
       lockScalingY: true,
       lockRotation: true,
       objectKey: "PHOTO_IMAGE",
+      scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
+      scaleY: 1,
     });
     img.scaleToHeight(GLOBAL_WIDTH);
-    img.scaleToWidth(GLOBAL_WIDTH);
+    img.scaleToWidth(GLOBAL_WIDTH + 15);
 
     // get transparent image
     fetchTransparentBgImage(
@@ -269,7 +284,145 @@ async function photoCapture() {
   changeScreen(SCREENS.CONFIRM_CAPTURE);
 }
 
+async function createGifFromImages(images) {
+  return new Promise((resolve, reject) => {
+    gifshot.createGIF(
+      {
+        gifWidth: 275,
+        gifHeight: 275,
+        images,
+        interval: 0.1,
+        numFrames: 30,
+        frameDuration: 1,
+        sampleInterval: 10,
+        numWorkers: 2,
+      },
+      function (obj) {
+        if (obj.error) reject();
+        resolve(obj.image);
+      }
+    );
+  });
+}
+
 async function boomerangCapture() {
+  await startCountdown(3);
+  const images = await Promise.all([
+    takePictureV2(),
+    takePictureV2(),
+    takePictureV2(),
+    takePictureV2(),
+    takePictureV2(),
+  ]);
+
+  const gif = await createGifFromImages(images);
+
+  // add gif to canvas
+  fabric.Image.fromURL(gif, (img) => {
+    img.setOptions({
+      left: 0,
+      top: 0,
+      hasControls: false,
+      hasRotatingPoint: false,
+      hasBorders: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockScalingX: true,
+      lockScalingY: true,
+      lockRotation: true,
+      objectKey: "PHOTO_IMAGE",
+      scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
+      scaleY: 1,
+    });
+    img.scaleToHeight(GLOBAL_WIDTH);
+    img.scaleToWidth(GLOBAL_WIDTH + 15);
+
+    // get transparent image
+    fetchTransparentBgImage(
+      gif.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, "")
+    ).then((result) => (TRANSPARENT_BG_IMAGE = result));
+
+    CANVAS.add(img);
+  });
+
+  var tempImg = document.createElement("img");
+  tempImg.setAttribute("src", gif);
+  tempImg.setAttribute("height", "0px");
+  document.body.appendChild(tempImg);
+
+  // add overlay to canvas
+  fabric.Image.fromURL(OVERLAY.src, function (img, isError) {
+    img.set({
+      originX: "left",
+      originY: "top",
+    });
+    img.scaleToHeight(GLOBAL_WIDTH);
+    img.scaleToWidth(GLOBAL_WIDTH);
+    CANVAS.setOverlayImage(img, CANVAS.renderAll.bind(CANVAS));
+  });
+  clearOverlay();
+  changeScreen(SCREENS.CONFIRM_CAPTURE);
+}
+async function boomerangCaptureV2() {
+  await startCountdown(3);
+
+  startLoader();
+  let images = [];
+
+  for (let i = 0; i < 20; i++) {
+    await sleep(100);
+    images.push(await takePicture());
+  }
+
+  images = [...images, ...images.reverse()];
+
+  fabric.Sprite.fromURLs(images, createSprite());
+
+  function createSprite() {
+    return function (sprite) {
+      sprite.setOptions({
+        left: 0,
+        top: 0,
+        hasControls: false,
+        hasRotatingPoint: false,
+        hasBorders: false,
+        lockMovementX: true,
+        lockMovementY: true,
+        lockScalingX: true,
+        lockScalingY: true,
+        lockRotation: true,
+        objectKey: "PHOTO_IMAGE",
+        scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
+        scaleY: 1,
+      });
+      sprite.scaleToHeight(GLOBAL_WIDTH);
+      sprite.scaleToWidth(GLOBAL_WIDTH + 15);
+      CANVAS.add(sprite);
+      setTimeout(function () {
+        sprite.set("dirty", true);
+        sprite.play();
+        stopLoader();
+      }, 2000);
+    };
+  }
+
+  (function render() {
+    CANVAS.renderAll();
+    fabric.util.requestAnimFrame(render);
+  })();
+
+  // add overlay to canvas
+  fabric.Image.fromURL(OVERLAY.src, function (img, isError) {
+    img.set({
+      originX: "left",
+      originY: "top",
+    });
+    img.scaleToHeight(GLOBAL_WIDTH);
+    img.scaleToWidth(GLOBAL_WIDTH + 10);
+    CANVAS.setOverlayImage(img, CANVAS.renderAll.bind(CANVAS));
+  });
+
+  clearOverlay();
   changeScreen(SCREENS.CONFIRM_CAPTURE);
 }
 
@@ -344,7 +497,7 @@ captureBtn.addEventListener("click", () => {
       photoCapture();
       break;
     case MODES.BOOMERANG:
-      boomerangCapture();
+      boomerangCaptureV2();
       break;
     case MODES.THREE_SHOT_GIF:
       threeShotGifCapture();

@@ -270,11 +270,11 @@ function onClickProp(pr) {
     img.set({
       left: 20,
       top: 20,
-      padding: 10,
+      padding: 1,
       rotatingPointOffset: 0,
     });
-    img.scaleToHeight(150);
-    img.scaleToWidth(150);
+    img.scaleToHeight(100);
+    img.scaleToWidth(100);
     CANVAS.add(img);
   });
 }
