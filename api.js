@@ -8,6 +8,7 @@ const sms = document.getElementById("smsOption");
 const overlayContainer = document.getElementById("overlay-container");
 const backgroundsContainer = document.getElementById("backgrounds-container");
 const propsContainer = document.getElementById("props-container");
+const removeBackground = document.getElementById("no-background");
 
 // global values
 let SMS_ENABLED = false;
@@ -67,7 +68,7 @@ async function uploadToBucket(imgSrc) {
   if (
     !(ImageURL.split(":")[0] != "http" && ImageURL.split(":")[0] != "https")
   ) {
-    return;
+    return imgSrc;
   }
   // Split the base64 string in data and contentType
   var realData, block, contentType, blob;
@@ -92,6 +93,7 @@ async function uploadToBucket(imgSrc) {
     );
     const data = await response.json();
     console.log("SUCCESS UPLOADING TO BUCKET");
+    return data.file;
   } catch (err) {
     console.log("ERROR UPLOADING TO BUCKET", err);
   }
@@ -121,6 +123,7 @@ async function fetchOverlays() {
 
     data.overlays.forEach((ov) => {
       const tmp = document.createElement("img");
+      tmp.crossOrigin = "Anonymous";
       tmp.classList.add("swiper-slide");
       tmp.setAttribute("src", ov.image);
 
@@ -160,6 +163,7 @@ async function fetchBackgrounds() {
     data.backgrounds.forEach((bg) => {
       const tmp = document.createElement("img");
       tmp.classList.add("swiper-slide");
+      tmp.crossOrigin = "Anonymous";
       tmp.setAttribute("src", bg.image);
 
       tmp.addEventListener("click", () => onClickBackground(tmp));
@@ -182,6 +186,7 @@ async function fetchBackgrounds() {
     console.log("ERROR FETCHING BACKGROUNDS", err);
   }
 }
+
 async function fetchProps() {
   if (PROPS_FETCHED) return;
   try {
@@ -196,6 +201,7 @@ async function fetchProps() {
     data.props.forEach((prop) => {
       const tmp = document.createElement("img");
       tmp.classList.add("swiper-slide");
+      tmp.crossOrigin = "Anonymous";
       tmp.setAttribute("src", prop.image);
 
       tmp.addEventListener("click", () => onClickProp(tmp));
@@ -226,59 +232,52 @@ async function onClickOverlay(ov) {
 
 function onClickBackground(bg) {
   // add background to canvas
-  fabric.Image.fromURL(bg.src, function (img, err) {
-    img.set({
-      originX: "left",
-      originY: "top",
-    });
-    img.scaleToHeight(GLOBAL_WIDTH);
-    img.scaleToWidth(GLOBAL_WIDTH);
-    CANVAS.setBackgroundImage(img, CANVAS.renderAll.bind(CANVAS));
-  });
+  fabric.Image.fromURL(
+    bg.src,
+    function (img) {
+      img.set({
+        originX: "left",
+        originY: "top",
+      });
+      img.scaleToHeight(GLOBAL_WIDTH);
+      img.scaleToWidth(GLOBAL_WIDTH);
+      CANVAS.setBackgroundImage(img, CANVAS.renderAll.bind(CANVAS));
+    },
+    { crossOrigin: "Anonymous" }
+  );
 
   // replace the photo_image object with image transparent background
   if (USING_TRANSPARENT_IMAGE) return;
-  return;
   CANVAS.forEachObject((obj, idx) => {
     if (obj.objectKey == "PHOTO_IMAGE") {
-      fabric.Image.fromURL(TRANSPARENT_BG_IMAGE, (img) => {
-        img.setOptions({
-          left: 0,
-          top: 0,
-          hasControls: false,
-          hasRotatingPoint: false,
-          hasBorders: false,
-          lockMovementX: true,
-          lockMovementY: true,
-          lockScalingX: true,
-          lockScalingY: true,
-          lockRotation: true,
-          objectKey: "PHOTO_IMAGE_TRANSPARENT",
-        });
-        img.scaleToHeight(GLOBAL_WIDTH);
-        img.scaleToWidth(GLOBAL_WIDTH);
-
-        CANVAS.insertAt(img, idx);
-        CANVAS.remove(obj);
-        USING_TRANSPARENT_IMAGE = true;
-      });
+      addImageToCanvas(TRANSPARENT_BG_IMAGE, idx);
+      CANVAS.remove(obj);
     }
+    if (obj.objectKey == "GIF_IMAGE") {
+      addGifToCanvas(TRANSPARENT_BG_IMAGE, 0, idx);
+      CANVAS.remove(obj);
+    }
+    USING_TRANSPARENT_IMAGE = true;
   });
 }
 
 function onClickProp(pr) {
   console.log("clicked");
-  fabric.Image.fromURL(pr.src, (img) => {
-    img.set({
-      left: 20,
-      top: 20,
-      padding: 1,
-      rotatingPointOffset: 0,
-    });
-    img.scaleToHeight(100);
-    img.scaleToWidth(100);
-    CANVAS.add(img);
-  });
+  fabric.Image.fromURL(
+    pr.src,
+    (img) => {
+      img.set({
+        left: 20,
+        top: 20,
+        padding: 1,
+        rotatingPointOffset: 0,
+      });
+      img.scaleToHeight(100);
+      img.scaleToWidth(100);
+      CANVAS.add(img);
+    },
+    { crossOrigin: "Anonymous" }
+  );
 }
 
 function b64toBlob(b64Data, contentType, sliceSize) {
@@ -312,10 +311,16 @@ window.addEventListener("load", async () => {
   fetchProps();
 });
 
-async function fetchTransparentBgImage(imageData) {
+async function fetchTransparentBgImage(imageSrc) {
   try {
+    const url = await uploadToBucket(imageSrc);
+
+    const base64 = btoa(url)
+      .toString()
+      .replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, "");
+
     const response = await fetch(
-      `https://portal.brandpix.com/remove_background.php?base64=${imageData}`
+      `https://portal.brandpix.com/remove_background.php?base64=${base64}`
     );
     const data = await response.json();
     console.log("response converting", data);
@@ -325,3 +330,19 @@ async function fetchTransparentBgImage(imageData) {
   }
   return null;
 }
+
+removeBackground.addEventListener("click", () => {
+  // replace the transparent image object with original
+  if (!USING_TRANSPARENT_IMAGE) return;
+  CANVAS.forEachObject((obj, idx) => {
+    if (obj.objectKey == "PHOTO_IMAGE") {
+      addImageToCanvas(PHOTO_STORED, idx);
+      CANVAS.remove(obj);
+    }
+    if (obj.objectKey == "GIF_IMAGE") {
+      addGifToCanvas(GIF_STORED, 0, idx);
+      CANVAS.remove(obj);
+    }
+    USING_TRANSPARENT_IMAGE = false;
+  });
+});
