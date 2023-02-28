@@ -7,6 +7,8 @@ const CANVAS_LABEL = document.getElementById("canvas-label");
 const CANVAS_CONTAINER = document.getElementById("canvas-section");
 const CANVAS = new fabric.Canvas("canvas");
 const UPLOAD_INPUT = document.getElementById("upload");
+const facebookShare = document.getElementById("facebook");
+const pinterestShare = document.getElementById("pinterest");
 
 const ALL_FILTERS = [
   [],
@@ -85,6 +87,8 @@ let CURRENT_SCREEN = SCREENS.SELECT_MODE;
 let CURRENT_SHARE_MODE = null;
 let GIF_STORED = null;
 let PHOTO_STORED = null;
+let CANVAS_EXPORT_PHOTO = null;
+let CANVAS_EXPORT_VIDEO = null;
 
 function mobileAndTabletCheck() {
   let check = false;
@@ -225,6 +229,7 @@ async function changeScreen(screenType, direction) {
     case SCREENS.SOCIAL_SHARE:
       CANVAS_CONTAINER.classList.add("hidden");
       CANVAS_LABEL.innerText = "";
+      uploadToPublicGallery();
       break;
     case SCREENS.EMAIL_FORM:
       CANVAS_CONTAINER.classList.add("hidden");
@@ -476,9 +481,49 @@ async function addOverlayToCanvas() {
 async function addBackgroundToCanvas() {}
 
 async function exportCanvas() {
+  startLoader();
   console.log("exporting canvas");
   const url = CANVAS.toDataURL("image/jpeg", 1);
-  uploadToBucket(url);
+  CANVAS_EXPORT_PHOTO = await uploadToBucket(url);
+
+  if (CURRENT_MODE != MODES.PHOTO) {
+    (async () => {
+      try {
+        CANVAS_EXPORT_VIDEO = await uploadToBucket(await recordCanvas());
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }
+
+  facebookShare.setAttribute(
+    "href",
+    `https://web.facebook.com/sharer.php?u=${CANVAS_EXPORT_PHOTO}&_rdc=1&_rdr`
+  );
+  pinterestShare.setAttribute(
+    "href",
+    `http://pinterest.com/pin/create/link/?url=${CANVAS_EXPORT_PHOTO}&media=${CANVAS_EXPORT_PHOTO}&description={Pin from canvas}`
+  );
+  // whatsAppShare.href = "";
+  stopLoader();
+}
+
+async function recordCanvas() {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let canvas = document.getElementById("canvas");
+    const stream = canvas.captureStream();
+    const rec = new MediaRecorder(stream);
+    rec.ondataavailable = (e) => chunks.push(e.data);
+    rec.onstop = (e) => {
+      const recordedVideoBlob = new Blob(chunks, { type: "video/webm" });
+      resolve(recordedVideoBlob);
+    };
+    rec.start();
+    setTimeout(() => {
+      rec.stop();
+    }, 4000);
+  });
 }
 
 START_BUTTON.addEventListener("click", async () => {
@@ -598,20 +643,29 @@ document.getElementById("upload")?.addEventListener("change", (e) => {
 });
 
 // send email
-document.getElementById("email-form")?.addEventListener("submit", (e) => {
+document.getElementById("email-form")?.addEventListener("submit", async (e) => {
+  startLoader();
   e.preventDefault();
   let formData = new FormData(e.target);
   let name = formData.get("name");
   let email = formData.get("email");
   if (!name || !email) return;
+  await sendEmail(name, email, CANVAS_EXPORT_PHOTO, CANVAS_EXPORT_VIDEO);
   e.target.reset();
+  stopLoader();
+  changeScreen(SCREENS.SOCIAL_SHARE, "forwards");
 });
 
 // send text
-document.getElementById("phone-form")?.addEventListener("submit", (e) => {
+document.getElementById("phone-form")?.addEventListener("submit", async (e) => {
+  startLoader();
   e.preventDefault();
   let formData = new FormData(e.target);
   let phone = formData.get("phone");
   if (!phone) return;
+
+  await sendText(phone, CANVAS_EXPORT_PHOTO, CANVAS_EXPORT_VIDEO);
   e.target.reset();
+  stopLoader();
+  changeScreen(SCREENS.SOCIAL_SHARE, "forwards");
 });
