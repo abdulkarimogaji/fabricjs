@@ -91,7 +91,10 @@ async function uploadToBucket(imgSrc) {
       }
     );
     const data = await response.json();
-  } catch (err) {}
+    console.log("SUCCESS UPLOADING TO BUCKET");
+  } catch (err) {
+    console.log("ERROR UPLOADING TO BUCKET", err);
+  }
 }
 
 function isHexColorLight(color) {
@@ -276,6 +279,30 @@ function onClickProp(pr) {
     img.scaleToWidth(100);
     CANVAS.add(img);
   });
+}
+
+function b64toBlob(b64Data, contentType, sliceSize) {
+  contentType = contentType || "";
+  sliceSize = sliceSize || 512;
+
+  var byteCharacters = atob(b64Data);
+  var byteArrays = [];
+
+  for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+    var byteNumbers = new Array(slice.length);
+    for (var i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    var byteArray = new Uint8Array(byteNumbers);
+
+    byteArrays.push(byteArray);
+  }
+
+  var blob = new Blob(byteArrays, { type: contentType });
+  return blob;
 }
 
 window.addEventListener("load", async () => {

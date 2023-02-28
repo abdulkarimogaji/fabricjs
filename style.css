@@ -106,7 +106,7 @@ h6 {
 .countdown {
   position: absolute;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -115,7 +115,7 @@ h6 {
 .countdown h2 {
   color: white;
   font-weight: bold;
-  font-size: 3rem;
+  font-size: 4rem;
 }
 
 .canvas-label {
