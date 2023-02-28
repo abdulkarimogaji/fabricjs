@@ -37,6 +37,11 @@
               playsinline
             ></video>
             <img
+              class="flip-camera-btn"
+              id="flip-camera-btn"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAACZ0lEQVRoge2YTU8TQRjHf5a0JGCCpDc/ASSGAxcT0YtEbxhtDZjwCbAin0KxcuDkxXjD+GU8NAGivGk4YI8cMBFfEtfDPtNZUejOzLMtJPNLJrtt9//M8+/M7jw7EIlEIpELSA1oA0lgawMPepx7h0ngZ5cEXdov4HpPHQBDwJYksKoQb1VibUnsnvFKOl4HBhXiDUqsRGJ7UwGauM3378BESKcnmJCYefv/AixL7h1eOARIgANgRtGEYUYSdMnleTaAEd8oILmimMKOTAfj7qLRybvU50TUiEbOoAzMAm+BbeCrtG1gTX4rF9AvoHeP1IE9uj9pdknLm1D+yTvUSAl4mYmzATwBxkhX6iFgHFgENjPXNQmbFepGmqL/ASxwdnIloCHXJqR/gC+qRupYE7cddNNYM76Vr5qRMvaeWPDQN0S7x4lSIydqRuawxaPPXB8gvZ8S4KGHXm1BNPXWa+C3o3YaGAHeyGczvUaBu8Aln4R8R2RHdGOOupvY9487cv4BuIp9z7mVI47a1DoSnevL0DDQEu2+HI+xJlrA5Rxx1I0Me2ivAO8zfZvWAqo5Y6gZ8Z1ahip2ZFxNgKKRNdEtemgNZmRcTYCikVnRbRL2BKzibgKUF8Rd0T720IeiWqLU8CtRNCi0aGyQrtinUQLmgUcB/RkKKeNXMnE2gKfANdI1piLnS9iS5BvhlYW6EcN94HMm3mntE3BPob/CjEC6a1gD3pG+3h5K+yjf1fGrdP9HoUZ6SdwOOrcYI205TvUrEQ9Mrn9tmS7T/UlzXtuzrJGKmHHdCe9nOxATWk/ASCQSibjzB+AQiQeaKA0QAAAAAElFTkSuQmCC"
+            />
+            <img
               id="overlay"
               src=""
               alt=""
@@ -253,6 +258,7 @@
                 <span class="option-name"> Like it </span>
               </div>
             </div>
+
             <div class="content__choose-background hidden" data-screen-type="SELECT_BACKGROUND">
               <div class="background-slider">
                 <div class="swiper background-slider-swiper">
@@ -266,6 +272,7 @@
               <button class="nav-button" data-forward-to="SELECT_EFFECTS">Next</button>
               <button class="nav-button" data-back-to="CONFIRM_CAPTURE">Back</button>
             </div>
+
             <div class="content__choose-background hidden" data-screen-type="SELECT_EFFECTS">
               <div class="effects-slider" id="effects-slider">
                   <div
@@ -326,6 +333,7 @@
               <button class="nav-button" data-forward-to="SELECT_PROPS">Next</button>
               <button class="nav-button" data-back-to="SELECT_BACKGROUND">Back</button>
             </div>
+
             <div class="content__choose-background hidden" data-screen-type="SELECT_PROPS">
               <div class="props-slider">
                 <div class="swiper prop-slider-swiper">
@@ -339,6 +347,42 @@
               <button class="nav-button" data-forward-to="SELECT_EMAIL_OR_PHONE">Next</button>
               <button class="nav-button" data-back-to="SELECT_EFFECTS">Back</button>
             </div>
+
+            <div class="content__choose-background hidden" data-screen-type="SELECT_EMAIL_OR_PHONE">
+              <p style="color:white;">Would you like to receive it by email or texted to your phone?</p>
+              <div class="content__choose-mode">
+                <div class="content__choose-mode__option">
+                  <button data-forward-to="PHONE_FORM">
+                    <img src="./assets/icons/smartphone-call.png" alt="">
+                  </button>
+                  <span class="option-name"> Send Phone </span>
+                </div>
+                <div class="content__choose-mode__option">
+                  <button data-forward-to="EMAIL_FORM">
+                      <img src="./assets/icons/email.png" alt="">
+                  </button>
+                  <span> Send Email </span>
+                </div>
+              </div>
+              <button class="nav-button" data-back-to="SELECT_PROPS">Back</button>
+            </div>
+
+            <form class="content__choose-background hidden form-container" data-screen-type="PHONE_FORM" id="phone-form">
+              <label for="phone">Phone</label>
+              <input placeholder="1(111)111111" class="remove-arrow" type="number" name="phone" id="phone">
+              <button class="nav-button" type="submit">Submit</button>
+              <button type="button" class="nav-button nav-button-sm" data-back-to="SELECT_EMAIL_OR_PHONE">Back</button>
+            </form>
+
+            <form class="content__choose-background hidden form-container" data-screen-type="EMAIL_FORM" id="email-form">
+              <label for="name">Your Name</label>
+              <input placeholder="John Doe" type="text" name="name" id="name">
+              <label for="name">Your Email</label>
+              <input placeholder="johnDoe@mail.com" type="email" name="email" id="email">
+              <button class="nav-button" type="submit">Submit</button>
+              <button type="button" class="nav-button nav-button-sm" data-back-to="SELECT_EMAIL_OR_PHONE">Back</button>
+            </form>
+
             <div class="content__choose-background hidden" data-screen-type="SOCIAL_SHARE">
               <div class="social-share-container" id="social-share-container">
                 <p>
@@ -460,6 +504,9 @@
   ></script>
   <script src="./gifshot.js"></script>
   <script src="./init.js"></script>
+  <script src="./index.js"></script>
+  <script src="./gifToSprite.js"></script>
+  <script src="./fabricGif.js"></script>
   <script src="./api.js"></script>
   <script src="./app.js"></script>
 </html>

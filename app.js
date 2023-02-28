@@ -6,6 +6,7 @@ const COUNTDOWN_TEXT = document.getElementById("countdown-text");
 const CANVAS_LABEL = document.getElementById("canvas-label");
 const CANVAS_CONTAINER = document.getElementById("canvas-section");
 const CANVAS = new fabric.Canvas("canvas");
+const UPLOAD_INPUT = document.getElementById("upload");
 
 const ALL_FILTERS = [
   [],
@@ -32,7 +33,8 @@ const captureBtn = document.getElementById("capture-btn");
 
 const VENDOR_URL = window.URL || window.webkitURL;
 const shutterSound = new Audio();
-shutterSound.autoplay = true;
+shutterSound.autoplay = false;
+shutterSound.src = "../assets/shutter_sound.mp3";
 let FLIP_MODE = true;
 
 // constants
@@ -54,12 +56,21 @@ const SCREENS = {
   EMAIL_FORM: "EMAIL_FORM",
   PHONE_FORM: "PHONE_FORM",
   SOCIAL_SHARE: "SOCIAL_SHARE",
+  PHONE_FORM: "PHONE_FORM",
+  EMAIL_FORM: "EMAIL_FORM",
 };
+
+const SHARE_MODES = {
+  EMAIL: "EMAIL",
+  PHONE: "PHONE",
+};
+
 let WEBCAM_ON = false;
 let IN_COUNTDOWN = false;
 let IN_SCREEN_CHANGE = false;
 let CURRENT_MODE = MODES.NONE;
 let CURRENT_SCREEN = SCREENS.SELECT_MODE;
+let CURRENT_SHARE_MODE = null;
 
 function mobileAndTabletCheck() {
   let check = false;
@@ -88,10 +99,6 @@ function clearOverlay() {
 
 function stopLoader() {
   LOADER.classList.add("hidden");
-}
-
-function playShutterSound() {
-  shutterSound.src = "../assets/shutter_sound.mp3";
 }
 
 function sleep(time) {
@@ -164,6 +171,7 @@ async function changeScreen(screenType, direction) {
 
   switch (screenType) {
     case SCREENS.SELECT_MODE:
+      CANVAS_CONTAINER.classList.remove("hidden");
       CANVAS_LABEL.innerText = "Choose your favorite photo experience";
       clearOverlay();
       clearFabricObjects();
@@ -182,17 +190,27 @@ async function changeScreen(screenType, direction) {
     case SCREENS.SELECT_EFFECTS:
       CANVAS_LABEL.innerText = "Try a Fun Filter, or Keep Original";
       break;
-    case SCREENS.SELECT_PRconstOPS:
+    case SCREENS.SELECT_PROPS:
       CANVAS_LABEL.innerText = "Photo Props. Why Not?";
+      CANVAS_CONTAINER.classList.remove("hidden");
       break;
     case SCREENS.SELECT_EMAIL_OR_PHONE:
       CANVAS_CONTAINER.classList.add("hidden");
-      CANVAS_LABEL.innerText =
-        "Would you like to receive it by email or texted to your phone?";
+      CANVAS_LABEL.innerText = "";
       break;
     case SCREENS.SOCIAL_SHARE:
       CANVAS_CONTAINER.classList.add("hidden");
       CANVAS_LABEL.innerText = "";
+      break;
+    case SCREENS.EMAIL_FORM:
+      CANVAS_CONTAINER.classList.add("hidden");
+      CANVAS_LABEL.innerText = "";
+      CURRENT_SHARE_MODE = SHARE_MODES.EMAIL;
+      break;
+    case SCREENS.PHONE_FORM:
+      CANVAS_CONTAINER.classList.add("hidden");
+      CANVAS_LABEL.innerText = "";
+      CURRENT_SHARE_MODE = SHARE_MODES.PHONE;
       break;
     default:
       CANVAS_LABEL.innerText = "";
@@ -238,7 +256,7 @@ async function takePictureV2() {
 
 async function photoCapture() {
   await startCountdown(3);
-  playShutterSound();
+  shutterSound.play();
 
   const url = await takePictureV2();
 
@@ -276,8 +294,8 @@ async function photoCapture() {
       originX: "left",
       originY: "top",
     });
-    img.scaleToHeight(GLOBAL_WIDTH);
-    img.scaleToWidth(GLOBAL_WIDTH);
+    img.scaleToHeight(GLOBAL_WIDTH + 15);
+    img.scaleToWidth(GLOBAL_WIDTH + 15);
     CANVAS.setOverlayImage(img, CANVAS.renderAll.bind(CANVAS));
   });
   clearOverlay();
@@ -307,109 +325,46 @@ async function createGifFromImages(images) {
 
 async function boomerangCapture() {
   await startCountdown(3);
-  const images = await Promise.all([
-    takePictureV2(),
-    takePictureV2(),
-    takePictureV2(),
-    takePictureV2(),
-    takePictureV2(),
-  ]);
-
-  const gif = await createGifFromImages(images);
-
-  // add gif to canvas
-  fabric.Image.fromURL(gif, (img) => {
-    img.setOptions({
-      left: 0,
-      top: 0,
-      hasControls: false,
-      hasRotatingPoint: false,
-      hasBorders: false,
-      lockMovementX: true,
-      lockMovementY: true,
-      lockScalingX: true,
-      lockScalingY: true,
-      lockRotation: true,
-      objectKey: "PHOTO_IMAGE",
-      scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
-      scaleY: 1,
-    });
-    img.scaleToHeight(GLOBAL_WIDTH);
-    img.scaleToWidth(GLOBAL_WIDTH + 15);
-
-    // get transparent image
-    fetchTransparentBgImage(
-      gif.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, "")
-    ).then((result) => (TRANSPARENT_BG_IMAGE = result));
-
-    CANVAS.add(img);
-  });
-
-  var tempImg = document.createElement("img");
-  tempImg.setAttribute("src", gif);
-  tempImg.setAttribute("height", "0px");
-  document.body.appendChild(tempImg);
-
-  // add overlay to canvas
-  fabric.Image.fromURL(OVERLAY.src, function (img, isError) {
-    img.set({
-      originX: "left",
-      originY: "top",
-    });
-    img.scaleToHeight(GLOBAL_WIDTH);
-    img.scaleToWidth(GLOBAL_WIDTH);
-    CANVAS.setOverlayImage(img, CANVAS.renderAll.bind(CANVAS));
-  });
-  clearOverlay();
-  changeScreen(SCREENS.CONFIRM_CAPTURE);
-}
-async function boomerangCaptureV2() {
-  await startCountdown(3);
 
   startLoader();
   let images = [];
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 10; i++) {
     await sleep(100);
     images.push(await takePicture());
   }
 
   images = [...images, ...images.reverse()];
 
-  fabric.Sprite.fromURLs(images, createSprite());
+  const gif = await createGifFromImages(images);
 
-  function createSprite() {
-    return function (sprite) {
-      sprite.setOptions({
-        left: 0,
-        top: 0,
-        hasControls: false,
-        hasRotatingPoint: false,
-        hasBorders: false,
-        lockMovementX: true,
-        lockMovementY: true,
-        lockScalingX: true,
-        lockScalingY: true,
-        lockRotation: true,
-        objectKey: "PHOTO_IMAGE",
-        scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
-        scaleY: 1,
-      });
-      sprite.scaleToHeight(GLOBAL_WIDTH);
-      sprite.scaleToWidth(GLOBAL_WIDTH + 15);
-      CANVAS.add(sprite);
-      setTimeout(function () {
-        sprite.set("dirty", true);
-        sprite.play();
-        stopLoader();
-      }, 2000);
-    };
-  }
+  // add gif to canvas
+  const gifImage = await fabricGif(gif);
+  gifImage.set({
+    top: 0,
+    left: 0,
+    hasControls: false,
+    hasRotatingPoint: false,
+    hasBorders: false,
+    lockMovementX: true,
+    lockMovementY: true,
+    lockScalingX: true,
+    lockScalingY: true,
+    lockRotation: true,
+  });
 
-  (function render() {
+  gifImage.scaleToWidth(CANVAS.width + 10);
+  gifImage.scaleToHeight(CANVAS.height + 20);
+  CANVAS.add(gifImage);
+  fabric.util.requestAnimFrame(function render() {
     CANVAS.renderAll();
     fabric.util.requestAnimFrame(render);
-  })();
+  });
+
+  // get transparent image
+  fetchTransparentBgImage(
+    gif.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, "")
+  ).then((result) => (TRANSPARENT_BG_IMAGE = result));
 
   // add overlay to canvas
   fabric.Image.fromURL(OVERLAY.src, function (img, isError) {
@@ -417,18 +372,15 @@ async function boomerangCaptureV2() {
       originX: "left",
       originY: "top",
     });
-    img.scaleToHeight(GLOBAL_WIDTH);
-    img.scaleToWidth(GLOBAL_WIDTH + 10);
+    img.scaleToHeight(GLOBAL_WIDTH + 15);
+    img.scaleToWidth(GLOBAL_WIDTH + 15);
     CANVAS.setOverlayImage(img, CANVAS.renderAll.bind(CANVAS));
   });
-
   clearOverlay();
   changeScreen(SCREENS.CONFIRM_CAPTURE);
 }
 
-async function threeShotGifCapture() {
-  changeScreen(SCREENS.CONFIRM_CAPTURE);
-}
+async function threeShotGifCapture() {}
 
 async function startWebcam() {
   const facingMode = FLIP_MODE ? "user" : "environment";
@@ -497,7 +449,7 @@ captureBtn.addEventListener("click", () => {
       photoCapture();
       break;
     case MODES.BOOMERANG:
-      boomerangCaptureV2();
+      boomerangCapture();
       break;
     case MODES.THREE_SHOT_GIF:
       threeShotGifCapture();
@@ -520,4 +472,91 @@ document.querySelectorAll("#effects-slider img").forEach((btn) => {
     });
     CANVAS.renderAll();
   });
+});
+
+// flip camera button
+document.getElementById("flip-camera-btn")?.addEventListener("click", () => {
+  FLIP_MODE = !FLIP_MODE;
+  if (mobileAndTabletCheck()) {
+    if (FLIP_MODE) VIDEO.classList.add("lateral-invert");
+    else VIDEO.classList.remove("lateral-invert");
+    stopWebcam();
+    startWebcam();
+  } else {
+    if (FLIP_MODE) VIDEO.classList.add("lateral-invert");
+    else VIDEO.classList.remove("lateral-invert");
+  }
+});
+
+document.getElementById("upload")?.addEventListener("change", (e) => {
+  let file = e.target.files[0];
+  if (!file) return;
+  console.log("here");
+
+  // add image to canvas
+  var reader = new FileReader();
+  reader.onload = function (f) {
+    fabric.Image.fromURL(f.target.result, (img) => {
+      img.setOptions({
+        left: 0,
+        top: 0,
+        hasControls: false,
+        hasRotatingPoint: false,
+        hasBorders: false,
+        lockMovementX: true,
+        lockMovementY: true,
+        lockScalingX: true,
+        lockScalingY: true,
+        lockRotation: true,
+        objectKey: "PHOTO_IMAGE",
+        scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
+        scaleY: 1,
+      });
+      if (img.height > CANVAS.height) {
+        img.scaleToHeight(GLOBAL_WIDTH);
+      }
+      img.scaleToWidth(GLOBAL_WIDTH + 15);
+
+      // get transparent image
+      fetchTransparentBgImage(
+        f.target.result.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, "")
+      ).then((result) => (TRANSPARENT_BG_IMAGE = result));
+
+      CANVAS.add(img);
+    });
+
+    // add overlay to canvas
+    fabric.Image.fromURL(OVERLAY.src, function (img, isError) {
+      img.set({
+        originX: "left",
+        originY: "top",
+      });
+      img.scaleToHeight(GLOBAL_WIDTH + 15);
+      img.scaleToWidth(GLOBAL_WIDTH + 15);
+      CANVAS.setOverlayImage(img, CANVAS.renderAll.bind(CANVAS));
+    });
+
+    clearOverlay();
+    changeScreen(SCREENS.CONFIRM_CAPTURE);
+  };
+  reader.readAsDataURL(file);
+});
+
+// send email
+document.getElementById("email-form")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  let formData = new FormData(e.target);
+  let name = formData.get("name");
+  let email = formData.get("email");
+  if (!name || !email) return;
+  e.target.reset();
+});
+
+// send text
+document.getElementById("phone-form")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  let formData = new FormData(e.target);
+  let phone = formData.get("phone");
+  if (!phone) return;
+  e.target.reset();
 });
