@@ -49,10 +49,12 @@ async function fetchEvent() {
   }
 }
 
-async function uploadToPublicGallery(imgSrc) {
+async function uploadToPublicGallery() {
   try {
     const response = await fetch(
-      `https://portal.brandpix.com/v1/api/live/gallery/${EVENT_ID}?image=${imgSrc}`,
+      `https://portal.brandpix.com/v1/api/live/gallery/${EVENT_ID}?image=${
+        CURRENT_MODE == MODES.PHOTO ? CANVAS_EXPORT_PHOTO : CANVAS_EXPORT_VIDEO
+      }`,
       {
         method: "post",
       }
@@ -230,6 +232,31 @@ async function onClickOverlay(ov) {
   OVERLAY.classList.add("show");
 }
 
+async function sendText(phone, imageSrc, videoSrc) {
+  const mode = getMode();
+  try {
+    const response = await fetch(
+      `https://portal.brandpix.com/v1/api/live/send_image_to_phone?phone=${phone}&image=${imageSrc}&video=${videoSrc}&mode=${mode}`
+    );
+    const data = await response.json();
+    console.log("SEND TEXT SUCCESSFUL", data);
+  } catch (err) {
+    console.log("FAILED TO SEND TEXT: ", err);
+  }
+}
+
+async function sendEmail(name, email, imageSrc, videoSrc) {
+  const mode = getMode();
+  try {
+    const response = await fetch(
+      `https://portal.brandpix.com/v1/api/live/send_image_to_mail?name=${name}&email=${email}&image=${imageSrc}&video=${videoSrc}&mode=${mode}&event=${EVENT_ID}`
+    );
+    const data = await response.json();
+  } catch (err) {
+    console.log("FAILED TO SEND EMAIL: ", err);
+  }
+}
+
 function onClickBackground(bg) {
   // add background to canvas
   fabric.Image.fromURL(
@@ -302,6 +329,19 @@ function b64toBlob(b64Data, contentType, sliceSize) {
 
   var blob = new Blob(byteArrays, { type: contentType });
   return blob;
+}
+
+function getMode() {
+  switch (CURRENT_MODE) {
+    case MODES.PHOTO:
+      return 1;
+    case MODES.BOOMERANG:
+      return 2;
+    case MODES.THREE_SHOT_GIF:
+      return 3;
+    default:
+      return 1;
+  }
 }
 
 window.addEventListener("load", async () => {
