@@ -186,7 +186,6 @@ async function fetchProps() {
       `https://portal.brandpix.com/v1/api/live/get_props?live_event_id=${EVENT_ID}`
     );
     const data = await response.json();
-    console.log(data);
     if (!Array.isArray(data.props)) throw new Error("an error occurred");
 
     PROPS_FETCHED = true;

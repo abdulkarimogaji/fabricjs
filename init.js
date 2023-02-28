@@ -81,7 +81,7 @@ fabric.Object.prototype.controls.br = new fabric.Control({
   cornerPadding: 0,
   actionHandler: controlsUtils.scalingEqually,
   withConnection: true,
-  cursorStyle: "nesw-resize",
+  cursorStyle: "nw-resize",
   render: renderIcon(scaleImg),
   cornerSize: propSettingSize,
   actionName: "scale",
@@ -144,8 +144,8 @@ fabric.Sprite = fabric.util.createClass(fabric.Image, {
   createSpriteImages: function () {
     this.spriteImages = [];
 
-    var steps = this._element.width / this.spriteWidth;
-    for (var i = 0; i < steps; i++) {
+    // var steps = this._element.width / this.spriteWidth;
+    for (var i = 0; i < 7; i++) {
       this.createSpriteImage(i);
       this.width / 2, -this.height / 2;
     }
@@ -166,6 +166,7 @@ fabric.Sprite = fabric.util.createClass(fabric.Image, {
 
   _render: function (ctx) {
     console.log("rendering", this.spriteImages.length);
+
     ctx.drawImage(
       this.spriteImages[this.spriteIndex],
       275 * this.spriteIndex,
