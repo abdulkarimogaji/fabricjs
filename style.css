@@ -61,20 +61,39 @@ h6 {
   border: 3px solid white;
   min-height: 650px;
   width: 90%;
-  max-width: 350px;
+  max-width: 360px;
+  overflow: hidden;
 }
 
 .hidden {
   display: none !important;
 }
+
 .block {
   display: block;
 }
+
+.welcome {
+  max-width: 400px;
+  color: white;
+  margin-bottom: 20rem;
+  margin-left: 30rem;
+}
+
+.welcome h1 {
+  font-size: 3.8rem;
+}
+
+.welcome p {
+  margin-bottom: 1rem;
+}
+
 .getting-started {
-  border: 1px solid black;
-  border-radius: 10px;
-  padding: 0.6rem 1.5rem;
-  font-size: 1.2rem;
+  border: 1px solid white;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
   background-color: white;
   font-weight: 600;
   transition: 400ms;
@@ -82,14 +101,14 @@ h6 {
 }
 
 .getting-started:hover {
-  background-color: black;
+  background-color: transparent;
   color: white;
 }
 
 .loader {
   position: absolute;
   inset: 0;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,6 +213,24 @@ h6 {
   user-select: none;
 }
 
+.no-background {
+  width: 85px !important;
+  height: 65px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent !important;
+  color: white !important;
+}
+
 .swiper-button-prev,
 .swiper-button-next {
   object-fit: contain;
@@ -274,12 +311,22 @@ h6 {
 .social-share-container > div {
   display: flex;
   justify-content: space-around;
+  margin-bottom: 3rem;
 }
 
-.view-full-gallery {
-  margin-top: 1rem;
+.social-share-container p {
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.view-image-gallery {
   color: rgb(13, 110, 253);
   text-decoration: underline;
+  transition: opacity 200ms;
+}
+
+.view-image-gallery:hover {
+  opacity: 0.8;
 }
 
 .flip-camera-btn {
@@ -312,4 +359,28 @@ h6 {
 
 .form-container label {
   align-self: flex-start;
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 40px 30px 70px 30px;
+    min-height: 650px;
+    width: 350px;
+    max-width: 90%;
+  }
+
+  .canvas-label {
+    padding: 0 1.5rem;
+  }
+
+  .welcome {
+    max-width: 400px;
+    color: white;
+    margin-bottom: 0;
+    margin-left: 0;
+  }
+
+  .welcome h1 {
+    font-size: 3rem;
+  }
 }

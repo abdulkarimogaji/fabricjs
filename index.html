@@ -21,6 +21,12 @@
     <header></header>
     <main class="main" id="live-event-background">
       <div class="welcome" id="welcome">
+        <h1 id="event-title">CJV Volleyball</h1>
+        <p id="event-description">
+          CJV Volleyball
+          CJV Lewis 15 National!
+          Let's Go Team. This years fun
+          Photo Booth.</p>
         <button class="getting-started" id="getting-started">
           Get started
         </button>
@@ -163,6 +169,7 @@
               <div class="overlay-slider">
                 <div class="swiper overlay-slider-swiper">
                   <div class="swiper-wrapper" id="overlay-container">
+                    <button class="swiper-slide no-background" id="no-overlay" >Normal</button>
                   </div>
                   <!-- If we need navigation buttons -->
                   <div class="swiper-button-prev"></div>
@@ -170,7 +177,7 @@
                 </div>
               </div>
               <label for="upload" class="upload-btn">
-                <input type="file" name="upload" id="upload" class="hidden">
+                <input type="file" name="upload" id="upload" class="hidden" accept=".jpg,.png,.jpeg">
                 Upload Image
               </label>
               <button class="nav-button" id="capture-btn">Capture</button>
@@ -263,7 +270,7 @@
               <div class="background-slider">
                 <div class="swiper background-slider-swiper">
                   <div class="swiper-wrapper" id="backgrounds-container">
-                    <img class="swiper-slide" src="./assets/background.png" id="no-background"></img>
+                    <button class="swiper-slide no-background" id="no-background" >Normal</button>
                   </div>
                   <!-- If we need navigation buttons -->
                   <div class="swiper-button-prev"></div>
@@ -407,13 +414,46 @@
                 <div>
                   <div class="content__choose-mode__option">
                     <button data-back-to="SELECT_MODE">
-                     <img src="" alt="">
+                      <svg width="35" height="35" style="
+                      shape-rendering: geometricPrecision;
+                      text-rendering: geometricPrecision;
+                      image-rendering: optimizeQuality;
+                      fill-rule: evenodd;
+                      clip-rule: evenodd;
+                    " viewBox="0 0 1007.33 1007.34">
+                    <g id="Layer_x0020_1">
+                      <g id="_2212569071504">
+                        <rect class="fil0" style="fill: none" x="-0" y="0" width="1007.33" height="1007.33"></rect>
+                        <path class="fil1" d="M868.78 453.48c-0.02,-0.02 -0.03,-0.03 -0.05,-0.05l-314.82 -314.81c-13.43,-13.42 -31.27,-20.82 -50.24,-20.82 -18.98,0 -36.82,7.39 -50.25,20.82l-314.65 314.65c-0.11,0.1 -0.22,0.22 -0.32,0.33 -27.56,27.7 -27.51,72.68 0.13,100.32 12.63,12.64 29.32,19.96 47.15,20.73 0.72,0.07 1.46,0.11 2.19,0.11l12.55 0 0 231.67c0,45.84 37.3,83.15 83.16,83.15l123.17 0c12.47,0 22.6,-10.12 22.6,-22.61l0 -181.63c0,-20.92 17.01,-37.94 37.94,-37.94l72.65 0c20.92,0 37.93,17.02 37.93,37.94l0 181.63c0,12.49 10.12,22.61 22.61,22.61l123.17 0c45.86,0 83.16,-37.31 83.16,-83.15l0 -231.67 11.63 0c18.97,0 36.82,-7.4 50.25,-20.82 27.68,-27.69 27.69,-72.74 0.03,-100.44z"></path>
+                      </g>
+                    </g>
+                  </svg>
                     </button>
                     <span> Take another </span>
                   </div>
                   <div class="content__choose-mode__option">
-                    <button>
-                     <img src="" alt="">
+                    <button  class="copy-to-clipboard" id="copy-to-clipboard">
+                      <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="35" height="35" viewBox="0 0 486.465 486.465" style="enable-background: new 0 0 486 486" xml:space="preserve">
+                        <g>
+                          <g>
+                            <path class="fil1" d="M453.323,39.655l-16.564-14.656C418.729,9.021,395.521,0.22,371.405,0.22c-28.223,0-55.118,12.079-73.791,33.143
+                                                                  L250.207,86.86c-6.105,6.876-9.164,15.722-8.608,24.901c0.557,9.166,4.642,17.576,11.518,23.673l4.438,3.94
+                                                                  c6.299,5.594,14.416,8.673,22.842,8.673l2.054-0.059c9.166-0.551,17.582-4.637,23.699-11.523l47.418-53.503
+                                                                  c8.342-9.416,24.169-10.362,33.601-2.026l16.558,14.688c4.748,4.203,7.57,10.021,7.955,16.384
+                                                                  c0.386,6.358-1.722,12.465-5.937,17.208L302.042,246.198c-6.982,7.887-19.377,10.164-28.734,5.342
+                                                                  c-14.577-7.519-33.58-3.93-44.392,8.256l-0.813,0.926c-7.573,8.518-10.727,19.838-8.674,31.104
+                                                                  c2.074,11.198,9.047,20.801,19.153,26.09c13.986,7.311,29.763,11.33,45.621,11.33h0.012c28.21,0,55.117-12.238,73.8-33.308
+                                                                  l103.691-117.046C497.746,138.226,494.004,75.731,453.323,39.655z"></path>
+                            <path class="fil1" d="M228.873,347.458c-13.669-12.103-36.426-10.743-48.574,2.938l-47.396,53.487c-8.342,9.412-24.159,10.387-33.58,2.043
+                                                                  l-16.576-14.705c-4.747-4.207-7.57-10.025-7.955-16.383c-0.387-6.348,1.722-12.453,5.935-17.196l103.692-116.974
+                                                                  c6.876-7.765,19.047-10.111,28.297-5.566c15.121,7.448,34.359,3.818,46.05-9.416c7.433-8.374,10.555-19.496,8.586-30.463
+                                                                  c-1.956-11.031-8.747-20.389-18.618-25.666c-14.201-7.604-30.274-11.624-46.466-11.624c-28.223,0-55.118,12.084-73.791,33.151
+                                                                  L24.772,308.038c-36.062,40.666-32.308,103.082,8.361,139.143l16.564,14.482c18.021,15.979,41.229,24.582,65.345,24.582
+                                                                  c0.011,0,0,0,0.011,0c28.223,0,55.129-11.889,73.812-32.957l47.388-53.379c6.116-6.887,9.176-15.691,8.618-24.819
+                                                                  c-0.533-9.068-4.736-17.694-11.538-23.706L228.873,347.458z"></path>
+                          </g>
+                        </g>
+                      </svg>
                     </button>
                     <span> Copy link </span>
                   </div>
