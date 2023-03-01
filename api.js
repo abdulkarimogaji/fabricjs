@@ -289,7 +289,6 @@ function onClickBackground(bg) {
 }
 
 function onClickProp(pr) {
-  console.log("clicked");
   fabric.Image.fromURL(
     pr.src,
     (img) => {
