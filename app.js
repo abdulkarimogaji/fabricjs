@@ -398,9 +398,10 @@ function stopWebcam() {
 }
 
 async function addImageToCanvas(url, insertPosition) {
-  fabric.Image.fromURL(url, (img) => {
-    img.setOptions(
-      {
+  fabric.Image.fromURL(
+    url,
+    (img) => {
+      img.setOptions({
         left: 0,
         top: 0,
         hasControls: false,
@@ -414,19 +415,19 @@ async function addImageToCanvas(url, insertPosition) {
         objectKey: "PHOTO_IMAGE",
         scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
         scaleY: 1,
-      },
-      { crossOrigin: "anonymous" }
-    );
-    if (img.height > CANVAS.height) {
-    }
-    img.scaleToHeight(GLOBAL_WIDTH);
-    img.scaleToWidth(GLOBAL_WIDTH + 15);
-    if (insertPosition) {
-      CANVAS.insertAt(img, insertPosition);
-    } else {
-      CANVAS.add(img);
-    }
-  });
+      });
+      if (img.height > CANVAS.height) {
+      }
+      img.scaleToHeight(GLOBAL_WIDTH);
+      img.scaleToWidth(GLOBAL_WIDTH + 15);
+      if (insertPosition) {
+        CANVAS.insertAt(img, insertPosition);
+      } else {
+        CANVAS.add(img);
+      }
+    },
+    { crossOrigin: "Anonymous" }
+  );
 }
 
 async function addGifToCanvas(gif, filterIdx, insertPosition) {
@@ -579,23 +580,23 @@ document.querySelectorAll("#effects-slider img").forEach((btn) => {
   btn.addEventListener("click", () => {
     const idx = +btn.getAttribute("data-filter-index") || 0;
 
-    CANVAS.forEachObject((obj) => {
+    CANVAS.forEachObject((obj, objIdx) => {
       if (obj.objectKey == "PHOTO_IMAGE") {
         obj.filters = ALL_FILTERS[idx];
         obj.applyFilters();
       }
 
       if (obj.objectKey == "GIF_IMAGE") {
-        console.log("applying to gif");
+        // readd gif but with filter
+        addGifToCanvas(
+          USING_TRANSPARENT_IMAGE ? TRANSPARENT_BG_IMAGE : GIF_STORED,
+          idx,
+          objIdx
+        );
         CANVAS.remove(obj);
       }
     });
     CANVAS.renderAll();
-
-    if (CURRENT_MODE != MODES.PHOTO) {
-      // readd gif but with filter
-      addGifToCanvas(GIF_STORED, idx);
-    }
   });
 });
 
