@@ -9,6 +9,7 @@ const overlayContainer = document.getElementById("overlay-container");
 const backgroundsContainer = document.getElementById("backgrounds-container");
 const propsContainer = document.getElementById("props-container");
 const removeBackground = document.getElementById("no-background");
+const removeOverlay = document.getElementById("no-overlay");
 
 // global values
 let SMS_ENABLED = false;
@@ -297,6 +298,7 @@ function onClickProp(pr) {
         top: 20,
         padding: 1,
         rotatingPointOffset: 0,
+        objectType: "PROP_IMAGE",
       });
       img.scaleToHeight(100);
       img.scaleToWidth(100);
@@ -384,4 +386,9 @@ removeBackground.addEventListener("click", () => {
     }
     USING_TRANSPARENT_IMAGE = false;
   });
+});
+
+removeOverlay.addEventListener("click", () => {
+  OVERLAY.src = "";
+  OVERLAY.classList.add("hidden");
 });

@@ -9,6 +9,7 @@ const CANVAS = new fabric.Canvas("canvas");
 const UPLOAD_INPUT = document.getElementById("upload");
 const facebookShare = document.getElementById("facebook");
 const pinterestShare = document.getElementById("pinterest");
+const uploadButton = document.getElementById("upload");
 
 const ALL_FILTERS = [
   [],
@@ -222,14 +223,10 @@ async function changeScreen(screenType, direction) {
     case SCREENS.SELECT_EMAIL_OR_PHONE:
       CANVAS_CONTAINER.classList.add("hidden");
       CANVAS_LABEL.innerText = "";
-      if (direction == "forwards") {
-        await exportCanvas();
-      }
-      break;
     case SCREENS.SOCIAL_SHARE:
       CANVAS_CONTAINER.classList.add("hidden");
       CANVAS_LABEL.innerText = "";
-      uploadToPublicGallery();
+      // uploadToPublicGallery();
       break;
     case SCREENS.EMAIL_FORM:
       CANVAS_CONTAINER.classList.add("hidden");
@@ -329,6 +326,9 @@ async function boomerangCapture() {
   // add gif to canvas
   await addGifToCanvas(gif);
 
+  // get transparent image
+  // TRANSPARENT_BG_IMAGE = await fetchTransparentBgImage(gif);
+
   // add overlay to canvas
   await addOverlayToCanvas();
   clearOverlay();
@@ -415,6 +415,7 @@ async function addImageToCanvas(url, insertPosition) {
         objectKey: "PHOTO_IMAGE",
         scaleX: mobileAndTabletCheck() || FLIP_MODE ? -1 : 1,
         scaleY: 1,
+        selectable: false,
       });
       if (img.height > CANVAS.height) {
       }
@@ -446,6 +447,7 @@ async function addGifToCanvas(gif, filterIdx, insertPosition) {
     objectKey: "GIF_IMAGE",
     scaleX: -1,
     scaleY: 1,
+    selectable: false,
   });
 
   gifImage.scaleToWidth(CANVAS.width + 10);
@@ -488,13 +490,7 @@ async function exportCanvas() {
   CANVAS_EXPORT_PHOTO = await uploadToBucket(url);
 
   if (CURRENT_MODE != MODES.PHOTO) {
-    (async () => {
-      try {
-        CANVAS_EXPORT_VIDEO = await uploadToBucket(await recordCanvas());
-      } catch (err) {
-        console.log(err);
-      }
-    })();
+    CANVAS_EXPORT_VIDEO = await uploadToBucket(await recordCanvas());
   }
 
   facebookShare.setAttribute(
@@ -515,10 +511,14 @@ async function recordCanvas() {
     let canvas = document.getElementById("canvas");
     const stream = canvas.captureStream();
     const rec = new MediaRecorder(stream);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
     rec.ondataavailable = (e) => chunks.push(e.data);
     rec.onstop = (e) => {
       const recordedVideoBlob = new Blob(chunks, { type: "video/webm" });
-      resolve(recordedVideoBlob);
+      reader.readAsDataURL(recordedVideoBlob);
     };
     rec.start();
     setTimeout(() => {
@@ -529,7 +529,7 @@ async function recordCanvas() {
 
 START_BUTTON.addEventListener("click", async () => {
   APP_SCREEN.classList.remove("hidden");
-  START_BUTTON.classList.add("hidden");
+  document.getElementById("welcome").classList.add("hidden");
   await startWebcam();
 });
 
@@ -538,6 +538,11 @@ document.querySelectorAll("[data-mode-select]").forEach((btn) => {
   btn.addEventListener("click", () => {
     var mode = btn.getAttribute("data-mode-select");
     CURRENT_MODE = mode;
+    if (mode == MODES.PHOTO) {
+      uploadButton.setAttribute("accept", ".jpg,.png,.jpeg");
+    } else {
+      uploadButton.setAttribute("accept", ".gif");
+    }
     changeScreen(SCREENS.CAPTURE_SCREEN);
   });
 });
@@ -552,9 +557,18 @@ document.querySelectorAll("[data-back-to]").forEach((btn) => {
 
 // event listeners for forward buttons
 document.querySelectorAll("[data-forward-to]").forEach((btn) => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     var toScreen = btn.getAttribute("data-forward-to");
-    changeScreen(toScreen, "forwards");
+    if (toScreen == SCREENS.SELECT_EMAIL_OR_PHONE) {
+      try {
+        await exportCanvas();
+        changeScreen(toScreen, "forwards");
+      } catch (err) {
+        console.log("err", err);
+      }
+    } else {
+      changeScreen(toScreen, "forwards");
+    }
   });
 });
 
@@ -615,7 +629,7 @@ document.getElementById("flip-camera-btn")?.addEventListener("click", () => {
 });
 
 // file upload
-document.getElementById("upload")?.addEventListener("change", (e) => {
+uploadButton.addEventListener("change", (e) => {
   let file = e.target.files[0];
   if (!file) return;
 
@@ -624,6 +638,8 @@ document.getElementById("upload")?.addEventListener("change", (e) => {
   // add image to canvas
   var reader = new FileReader();
   reader.onload = async function (f) {
+    stopWebcam();
+    startLoader();
     if (["gif"].includes(ext)) {
       GIF_STORED = f.target.result;
       await addGifToCanvas(f.target.result);
@@ -632,8 +648,10 @@ document.getElementById("upload")?.addEventListener("change", (e) => {
       await addImageToCanvas(f.target.result);
     }
 
-    // get transparent image
-    TRANSPARENT_BG_IMAGE = await fetchTransparentBgImage(f.target.result);
+    if (CURRENT_MODE == MODES.PHOTO) {
+      // get transparent image
+      TRANSPARENT_BG_IMAGE = await fetchTransparentBgImage(f.target.result);
+    }
 
     // add overlay to canvas
     await addOverlayToCanvas();
